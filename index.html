@@ -123,8 +123,8 @@
   let startTime;
 
   const TOTAL_QUESTIONS = 2;
-  const BIN_URL = "https://api.jsonbin.io/v3/b/680245f98960c979a587f316/latest";
-  const BIN_POST_URL = "https://api.jsonbin.io/v3/b/680245f98960c979a587f316";
+  const BIN_URL = "https://api.jsonbin.io/v3/b/680249638a456b79668c31ad/latest";
+  const BIN_POST_URL = "https://api.jsonbin.io/v3/b/680249638a456b79668c31ad";
   const API_KEY = "$2a$10$0Ovla925LMORQ0agE463DOVmeIXRfBVviF0SAVtpxrWLeq8UTeeWq";
 
   function setArrowDirection(cap) {
@@ -188,7 +188,7 @@
     fetch(BIN_URL)
       .then(res => res.json())
       .then(data => {
-        let records = data.record;
+        let records = data.record || data;
         records.push(entry);
         records.sort((a, b) => a.time - b.time);
         const limited = records.slice(0, 50);
@@ -231,7 +231,8 @@
     fetch(BIN_URL)
       .then(res => res.json())
       .then(data => {
-        renderHallOfFame(data.record);
+        const records = data.record || data;
+        renderHallOfFame(records);
       });
   }
 
