@@ -185,7 +185,11 @@
   }
 
   function saveToRemoteHallOfFame(entry) {
-    fetch(BIN_URL)
+    fetch(BIN_URL, {
+      headers: {
+        'X-Master-Key': API_KEY
+      }
+    })
       .then(res => res.json())
       .then(data => {
         let records = data.record || data;
@@ -200,10 +204,13 @@
           },
           body: JSON.stringify({ record: limited })
         })
-          .then(() => {
+          .then(res => res.json())
+          .then(response => {
+            console.log("✅ Sauvegarde réussie:", response);
             renderHallOfFame(limited);
             showRanking(limited, entry);
-          });
+          })
+          .catch(err => console.error("❌ Erreur sauvegarde:", err));
       });
   }
 
@@ -228,12 +235,17 @@
   }
 
   function loadHallOfFame() {
-    fetch(BIN_URL)
+    fetch(BIN_URL, {
+      headers: {
+        'X-Master-Key': API_KEY
+      }
+    })
       .then(res => res.json())
       .then(data => {
         const records = data.record || data;
         renderHallOfFame(records);
-      });
+      })
+      .catch(err => console.error("❌ Erreur de chargement du Hall of Fame:", err));
   }
 
   function shuffleArray(array) {
