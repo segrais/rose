@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Cap en Degrés</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      padding: 30px;
+    }
+
+    .hall-of-fame {
+      width: 300px;
+      margin-right: 30px;
+    }
+
+    .hall-of-fame h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .hall-of-fame table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .hall-of-fame th, .hall-of-fame td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .quiz-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .rose-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      background-image: url('rose.jpg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin-bottom: 20px;
+    }
+
+    .arrow-tip {
+      position: absolute;
+      width: 4px;
+      height: 110px;
+      background-color: red;
+      top: 90px;
+      left: 200px;
+      transform-origin: bottom center;
+      transform: translateX(-50%) rotate(0deg);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="hall-of-fame">
+    <h2>🏆 Hall of Fame</h2>
+    <table id="hallTable">
+      <thead>
+        <tr><th>#</th><th>Nom</th><th>Temps</th><th>Date</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="quiz-container">
+    <h1>Quel est le bon cap ?</h1>
+    <div class="rose-container" id="rose">
+      <div class="arrow-tip" id="arrow"></div>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="answers" id="answers"></div>
+    <button id="startBtn" onclick="startQuiz()">Nouveau quiz</button>
+  </div>
+
+  <script>
+    const caps = ["030°", "045°", "060°", "090°", "120°", "135°", "150°", "180°", "210°", "225°", "240°", "270°", "300°", "315°", "330°", "360°"];
+    const angleMap = {"030°": 30, "045°": 45, "060°": 60, "090°": 90, "120°": 120, "135°": 135, "150°": 150, "180°": 180, "210°": 210, "225°": 225, "240°": 240, "270°": 270, "300°": 300, "315°": 315, "330°": 330, "360°": 0};
+
+    const arrow = document.getElementById('arrow');
+    const answersDiv = document.getElementById('answers');
+    const resultDiv = document.getElementById('result');
+    const hallTable = document.querySelector('#hallTable tbody');
+
+    let correctCap = "";
+    let questionIndex = 0;
+    let correctCount = 0;
+    let startTime;
+
+    function setArrowDirection(cap) {
+      const angle = angleMap[cap];
+      arrow.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    }
+
+    function startQuiz() {
+      questionIndex = 0;
+      correctCount = 0;
+      resultDiv.textContent = '';
+      document.getElementById('startBtn').disabled = true;
+      startTime = Date.now();
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      if (questionIndex === 10) return endQuiz();
+      correctCap = caps[Math.floor(Math.random() * caps.length)];
+      setArrowDirection(correctCap);
+      const options = [correctCap];
+      while (options.length < 4) {
+        const rand = caps[Math.floor(Math.random() * caps.length)];
+        if (!options.includes(rand)) options.push(rand);
+      }
+      shuffleArray(options);
+      answersDiv.innerHTML = '';
+      resultDiv.textContent = '';
+      options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.textContent = option;
+        btn.onclick = () => handleAnswer(option);
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selected) {
+      const isCorrect = selected === correctCap;
+      resultDiv.textContent = isCorrect ? '✅ Bonne réponse !' : `❌ Mauvaise réponse. C'était ${correctCap}`;
+      resultDiv.style.color = isCorrect ? 'green' : 'red';
+      if (isCorrect) correctCount++;
+      questionIndex++;
+      setTimeout(nextQuestion, 1000);
+    }
+
+    function endQuiz() {
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      answersDiv.innerHTML = '';
+      document.getElementById('startBtn').disabled = false;
+      if (correctCount === 10) {
+        const name = prompt(`Bravo ! Tu accèdes au Hall of Fame. Temps : ${totalTime} secondes. Entre ton nom:`);
+        const entry = { name, time: parseFloat(totalTime), date: new Date().toLocaleDateString() };
+        saveToHallOfFame(entry);
+        showRanking(entry);
+      } else {
+        resultDiv.textContent = `❌ Tu as fait ${10 - correctCount} erreur(s). Il faut 10/10 pour accéder au Hall of Fame.`;
+        resultDiv.style.color = 'red';
+      }
+    }
+
+    function saveToHallOfFame(entry) {
+      const records = JSON.parse(localStorage.getItem('hallOfFame') || '[]');
+      records.push(entry);
+      records.sort((a, b) => a.time - b.time);
+      const limited = records.slice(0, 50);
+      localStorage.setItem('hallOfFame', JSON.stringify(limited));
+      renderHallOfFame();
+    }
+
+    function renderHallOfFame() {
+      const records = JSON.parse(localStorage.getItem('hallOfFame') || '[]');
+      hallTable.innerHTML = '';
+      records.forEach((rec, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${index + 1}</td><td>${rec.name}</td><td>${rec.time}s</td><td>${rec.date}</td>`;
+        hallTable.appendChild(tr);
+      });
+    }
+
+    function showRanking(entry) {
+      const records = JSON.parse(localStorage.getItem('hallOfFame') || '[]');
+      const index = records.findIndex(r => r.name === entry.name && r.time === entry.time);
+      if (index > 0) {
+        const above = records[index - 1];
+        const diff = (entry.time - above.time).toFixed(2);
+        alert(`Tu es classé ${index + 1}e. Juste devant toi : ${above.name} (${above.time}s). Tu dois gagner ${diff}s pour passer devant.`);
+      } else {
+        alert(`Tu es le meilleur ! 🏆 Premier du Hall of Fame !`);
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    renderHallOfFame();
+  </script>
+</body>
+</html>
