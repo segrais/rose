@@ -1,159 +1,96 @@
+
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Cap en Degrés</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      padding: 30px;
-    }
-
-    .hall-of-fame {
-      width: 300px;
-      margin-right: 30px;
-    }
-
-    .hall-of-fame h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .hall-of-fame table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .hall-of-fame th, .hall-of-fame td {
-      border: 1px solid #ccc;
-      padding: 4px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .quiz-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .rose-container {
-      position: relative;
-      width: 400px;
-      height: 400px;
-      background-image: url('rose.jpg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      margin-bottom: 20px;
-    }
-
-    .arrow-tip {
-      position: absolute;
-      width: 4px;
-      height: 110px;
-      background-color: red;
-      top: 90px;
-      left: 200px;
-      transform-origin: bottom center;
-      transform: translateX(-50%) rotate(0deg);
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0; }
-    }
-
-    .answers {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .result {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-<div class="hall-of-fame">
-  <h2>🏆 Hall of Fame</h2>
-  <table id="hallTable">
-    <thead>
-    <tr><th>#</th><th>Nom</th><th>Temps</th><th>Date</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<div class="quiz-container">
-  <h1>Quel est le bon cap ?</h1>
-  <div class="rose-container" id="rose">
-    <div class="arrow-tip" id="arrow"></div>
-  </div>
-  <div class="result" id="result"></div>
-  <div class="answers" id="answers"></div>
-  <button id="startBtn" onclick="startQuiz()">Nouveau quiz</button>
-</div>
-
-<script>
-  const caps = ["030°", "045°", "060°", "090°", "120°", "135°", "150°", "180°", "210°", "225°", "240°", "270°", "300°", "315°", "330°", "360°"];
-  const angleMap = {"030°": 30, "045°": 45, "060°": 60, "090°": 90, "120°": 120, "135°": 135, "150°": 150, "180°": 180, "210°": 210, "225°": 225, "240°": 240, "270°": 270, "300°": 300, "315°": 315, "330°": 330, "360°": 0};
-  const arrow = document.getElementById('arrow');
-  const answersDiv = document.getElementById('answers');
-  const resultDiv = document.getElementById('result');
-  const hallTable = document.querySelector('#hallTable tbody');
-
-  let correctCap = "";
-  let questionIndex = 0;
-  let correctCount = 0;
-  let startTime;
-
-  const BIN_URL = "https://api.jsonbin.io/v3/b/680245f98960c979a587f316/latest";
-  const BIN_POST_URL = "https://api.jsonbin.io/v3/b/680245f98960c979a587f316";
-  const API_KEY = "$2a$10$0Ovla925LMORQ0agE463DOVmeIXRfBVviF0SAVtpxrWLeq8UTeeWq";
-
-  function setArrowDirection(cap) {
-    const angle = angleMap[cap];
-    arrow.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-  }
-
-  function startQuiz() {
-    questionIndex = 0;
-    correctCount = 0;
-    resultDiv.textContent = '';
-    document.getElementById('startBtn').disabled = true;
-    startTime = Date.now();
-    nextQuestion();
-  }
-
-  function nextQuestion() {
-    if (questionIndex === 10) return endQuiz();
-    correctCap = caps[Math.floor(Math.random() * caps.length)];
-    setArrowDirection(correctCap);
-    const options = [correctCap];
-    while (options.length < 4) {
-      const rand = caps[Math.floor(Math.random() * caps.length)];
-      if (!options.includes(rand)) options.push(rand);
-    }
-    shuffleArray(options);
-    answersDiv.innerHTML = '';
-    resultDiv.textContent = '';
-    options.forEach(option => {
-      const btn = document.createElement('button');
       btn.textContent = option;
       btn.onclick = () => handleAnswer(option);
       answersDiv.appendChild(btn);
